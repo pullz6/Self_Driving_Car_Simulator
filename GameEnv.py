@@ -1,23 +1,31 @@
 import pyglet
 from pyglet import shapes
+from shapely.geometry import Polygon
 
-window = pyglet.window.Window(width=800, height = 800, caption = 'Race Track')
+#Create the window
+window = pyglet.window.Window(width=800, height = 400, caption = 'Race Track')
 
-track_image = pyglet.resource.image('track.png')
+#Add the track image
+track_image = pyglet.resource.image('track_3.png')
 track_sprite = pyglet.sprite.Sprite(track_image, x=0, y=0)
 
+#Resize the image
 imageWidth = 800
-imageHeight = 800
-
+imageHeight = 523
 track_sprite.width = imageWidth
 track_sprite.height = imageHeight
-#circle = shapes.Circle(x=700,y=150,radius=100, color=(50,225,30))
-#label = pyglet.text.Label('Car goes Vroom Vroom',font_name='Times New Roman',font_size=36,x=window.width//2, y=window.height//2, anchor_x='center', anchor_y='center')
+
+#Creating the track boundary 
+
+##First lets create the lines
+line_top1 = shapes.Line(230, 295, 570, 295, width=12)
+line_bottom1 = shapes.Line(230, 111, 570, 111, width=12, color=(200,20,20))
 
 #Registering the function
 @window.event
 def on_draw():
     track_sprite.draw()
-    #window.clear()
-    #circle.draw()
+    line_top1.draw()
+    line_bottom1.draw()
+    
 pyglet.app.run()
