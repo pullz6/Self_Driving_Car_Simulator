@@ -14,7 +14,7 @@ imageWidth = 800
 imageHeight = 523
 track_sprite.width = imageWidth
 track_sprite.height = imageHeight
-
+RADIUS = 400
 #For the innner track
 #Creating the track boundary with circles for the edges 
 circle1_left = shapes.Circle(x=230,y=209,radius=91, color=(50,225,30))
@@ -23,6 +23,15 @@ circle1_right = shapes.Circle(x=570,y=209,radius=91, color=(50,225,30))
 ##First lets create the lines o the track 
 line_top1 = shapes.Line(230, 295, 570, 295, width=11.5)
 line_bottom1 = shapes.Line(230, 123, 570, 123, width=11.5, color=(200,20,20))
+
+# Control points for the semicircle
+p0 = (imageWidth // 2 - RADIUS, imageHeight // 2)
+p1 = (imageWidth// 2 - RADIUS / 2, imageHeight // 2 + RADIUS)
+p2 = (imageWidth // 2 + RADIUS / 2, imageHeight // 2 + RADIUS)
+p3 = (imageWidth // 2 + RADIUS, imageHeight // 2)
+
+# Create a Bézier curve shape
+bezier_curve = shapes.BezierCurve(p0, p1, p2, p3, color=(255, 0, 0))
 
 #For the outer track 
 #Creating the track boundary with circles for the edges 
@@ -42,6 +51,7 @@ def on_draw():
     circle1_right.draw()
     line_bottom1.draw()
     line_top2.draw()
+    bbezier_curve.draw()
     line_bottom2.draw()
     
     
