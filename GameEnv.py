@@ -51,6 +51,45 @@ arc_2 = shapes.Arc(x=CENTER_X, y=CENTER_Y, radius = RADIUS, start_angle= start_a
 line_top2 = shapes.Line(190, 395, 610, 395, width=11.5, color=(200,20,20))
 line_bottom2 = shapes.Line(190, 14, 610, 13.7, width=11.5, color=(200,20,20))
 
+# --- Agent Class ---
+class Agent:
+    def __init__(self, x, y, size=10, speed=2):
+        # Initial agent position
+        self.x = x
+        self.y = y
+        self.size = size
+        self.speed = speed
+        self.angle = 0  # Initial direction (angle in radians)
+
+        # Shape of the agent (for visualization)
+        self.shape = shapes.Circle(self.x, self.y, self.size, color=(0, 0, 255))
+
+    def move(self, action):
+        """
+        Move the agent based on the action:
+        action: 0 = turn left, 1 = move forward, 2 = turn right
+        """
+        if action == 0:  # Turn left
+            self.angle -= 0.1
+        elif action == 2:  # Turn right
+            self.angle += 0.1
+        elif action == 1:  # Move forward
+            self.x += self.speed * math.cos(self.angle)
+            self.y += self.speed * math.sin(self.angle)
+
+        # Update the agent's shape position
+        self.shape.x = self.x
+        self.shape.y = self.y
+
+    def get_position(self):
+        return self.x, self.y
+
+    def draw(self):
+        self.shape.draw()
+
+
+# Create agent instance
+agent = Agent(x=300, y=250)  # Start the agent at some initial position
 
 #Registering the function
 @window.event
@@ -66,6 +105,18 @@ def on_draw():
     arc_1.draw()
     arc_2.draw()
     line_bottom2.draw()
-    
-    
+    agent.draw()
+
+
+# Registering the function for keyboard input to control the agent
+@window.event
+def on_key_press(symbol, modifiers):
+    if symbol == pyglet.window.key.LEFT:
+        agent.move(0)  # Turn left
+    elif symbol == pyglet.window.key.RIGHT:
+        agent.move(2)  # Turn right
+    elif symbol == pyglet.window.key.UP:
+        agent.move(1)  # Move forward
+        
+        
 pyglet.app.run()
