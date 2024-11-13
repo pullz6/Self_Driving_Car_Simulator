@@ -59,23 +59,26 @@ class Agent:
         self.y = y
         self.size = size
         self.speed = speed
-        self.angle = 0  # Initial direction (angle in radians)
 
         # Shape of the agent (for visualization)
         self.shape = shapes.Circle(self.x, self.y, self.size, color=(0, 0, 255))
 
-    def move(self, action):
+    def move(self, direction):
         """
-        Move the agent based on the action:
-        action: 0 = turn left, 1 = move forward, 2 = turn right
+        Move the agent in the specified direction:
+        'left' = turn left
+        'right' = turn right
+        'up' = move up (north)
+        'down' = move down (south)
         """
-        if action == 0:  # Turn left
-            self.angle -= 0.1
-        elif action == 2:  # Turn right
-            self.angle += 0.1
-        elif action == 1:  # Move forward
-            self.x += self.speed * math.cos(self.angle)
-            self.y += self.speed * math.sin(self.angle)
+        if direction == 'left':  # Move agent left
+            self.x -= self.speed
+        elif direction == 'right':  # Move agent right
+            self.x += self.speed
+        elif direction == 'up':  # Move agent up
+            self.y += self.speed
+        elif direction == 'down':  # Move agent down
+            self.y -= self.speed
 
         # Update the agent's shape position
         self.shape.x = self.x
@@ -87,9 +90,8 @@ class Agent:
     def draw(self):
         self.shape.draw()
 
-
 # Create agent instance
-agent = Agent(x=300, y=250)  # Start the agent at some initial position
+agent = Agent(x=70, y=220)  # Start the agent at some initial position
 
 #Registering the function
 @window.event
@@ -112,11 +114,13 @@ def on_draw():
 @window.event
 def on_key_press(symbol, modifiers):
     if symbol == pyglet.window.key.LEFT:
-        agent.move(0)  # Turn left
+        agent.move('left')  # Move left
     elif symbol == pyglet.window.key.RIGHT:
-        agent.move(2)  # Turn right
+        agent.move('right')  # Move right
     elif symbol == pyglet.window.key.UP:
-        agent.move(1)  # Move forward
-        
-        
+        agent.move('up')  # Move up
+    elif symbol == pyglet.window.key.DOWN:
+        agent.move('down')  # Move down
+
+# Run the pyglet application
 pyglet.app.run()
