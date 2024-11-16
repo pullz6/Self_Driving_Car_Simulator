@@ -2,6 +2,7 @@ import pyglet
 from pyglet import shapes
 from shapely.geometry import Polygon
 import math
+from math import sqrt, pi, atan2
 
 #Create the window
 window = pyglet.window.Window(width=800, height = 400, caption = 'Race Track')
@@ -59,33 +60,63 @@ class Agent:
         self.y = y
         self.size = size
         self.speed = speed
-
-        # Shape of the agent (for visualization)
         self.shape = shapes.Circle(self.x, self.y, self.size, color=(0, 0, 255))
 
-    def move(self, direction):
-        """
-        Move the agent in the specified direction:
-        'left' = turn left
-        'right' = turn right
-        'up' = move up (north)
-        'down' = move down (south)
-        """
-        if direction == 'left':  # Move agent left
+    def move(self, direction, obstacles):
+        # Backup position in case of collision
+        original_x, original_y = self.x, self.y
+
+        # Move agent
+        if direction == 'left':
             self.x -= self.speed
-        elif direction == 'right':  # Move agent right
+        elif direction == 'right':
             self.x += self.speed
-        elif direction == 'up':  # Move agent up
+        elif direction == 'up':
             self.y += self.speed
-        elif direction == 'down':  # Move agent down
+        elif direction == 'down':
             self.y -= self.speed
 
-        # Update the agent's shape position
+        # Check for collision
+        if self.check_collision(obstacles):
+            # Restore original position if collision detected
+            self.x, self.y = original_x, original_y
+
+        # Update shape's position
         self.shape.x = self.x
         self.shape.y = self.y
 
-    def get_position(self):
-        return self.x, self.y
+    def check_collision(self, obstacles):
+        """Check if the agent collides with any obstacles."""
+        for obstacle in obstacles:
+            if isinstance(obstacle, shapes.Circle):
+                # Check collision with a circle
+                distance = sqrt((self.x - obstacle.x) ** 2 + (self.y - obstacle.y) ** 2)
+                if distance < self.size + obstacle.radius:
+                    return True
+            elif isinstance(obstacle, shapes.Line):
+                # Check collision with a line (simple bounding box)
+                line_start = (obstacle.x, obstacle.y)
+                line_end = (obstacle.x2, obstacle.y2)
+
+                # Bounding box
+                min_x = min(line_start[0], line_end[0]) - self.size
+                max_x = max(line_start[0], line_end[0]) + self.size
+                min_y = min(line_start[1], line_end[1]) - self.size
+                max_y = max(line_start[1], line_end[1]) + self.size
+
+                if min_x <= self.x <= max_x and min_y <= self.y <= max_y:
+                    return True
+            elif isinstance(obstacle, shapes.Arc):
+                # Check collision with an arc
+                distance = sqrt((self.x - obstacle.x) ** 2 + (self.y - obstacle.y) ** 2)
+                if obstacle.radius - obstacle.thickness / 2 <= distance <= obstacle.radius + obstacle.thickness / 2:
+                    # Check if the angle is within the arc's range
+                    angle = atan2(self.y - obstacle.y, self.x - obstacle.x)
+                    start_angle = obstacle.start_angle
+                    end_angle = start_angle + obstacle.angle
+                    if start_angle <= angle <= end_angle:
+                        return True
+        return False
 
     def draw(self):
         self.shape.draw()
@@ -110,17 +141,19 @@ def on_draw():
     agent.draw()
 
 
-# Registering the function for keyboard input to control the agent
+# Define obstacles list
+obstacles = [circle1_left, circle1_right, line_top1, line_bottom1, line_top2, line_bottom2, arc_1, arc_2]
+
 @window.event
 def on_key_press(symbol, modifiers):
     if symbol == pyglet.window.key.LEFT:
-        agent.move('left')  # Move left
+        agent.move('left', obstacles)
     elif symbol == pyglet.window.key.RIGHT:
-        agent.move('right')  # Move right
+        agent.move('right', obstacles)
     elif symbol == pyglet.window.key.UP:
-        agent.move('up')  # Move up
+        agent.move('up', obstacles)
     elif symbol == pyglet.window.key.DOWN:
-        agent.move('down')  # Move down
+        agent.move('down', obstacles)
 
 # Run the pyglet application
 pyglet.app.run()
