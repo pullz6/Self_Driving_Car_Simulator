@@ -91,6 +91,7 @@ class RLAgent:
 
     def move(self, action, obstacles):
         original_x, original_y = self.x, self.y
+
         if action == 'left':
             self.x -= self.speed
         elif action == 'right':
@@ -99,34 +100,38 @@ class RLAgent:
             self.y += self.speed
         elif action == 'down':
             self.y -= self.speed
+
+        # Check for collisions
         collision = self.check_collision(obstacles)
         if collision:
+            # Revert position if collision
             self.x, self.y = original_x, original_y
+
+        # Update agent's position
         self.shape.x = self.x
         self.shape.y = self.y
+
         return collision
+
 
     def check_collision(self, obstacles):
         for obstacle in obstacles:
             if isinstance(obstacle, shapes.Circle):
                 distance = sqrt((self.x - obstacle.x) ** 2 + (self.y - obstacle.y) ** 2)
-                if distance < self.size + obstacle.radius:
-                    return True
-            elif isinstance(obstacle, shapes.Line):
-                line_start = (obstacle.x, obstacle.y)
-                line_end = (obstacle.x2, obstacle.y2)
-                min_x = min(line_start[0], line_end[0]) - self.size
-                max_x = max(line_start[0], line_end[0]) + self.size
-                min_y = min(line_start[1], line_end[1]) - self.size
-                max_y = max(line_start[1], line_end[1]) + self.size
-                if min_x <= self.x <= max_x and min_y <= self.y <= max_y:
+                if distance < self.size + obstacle.radius - 1:
                     return True
             elif isinstance(obstacle, shapes.Arc):
                 center_x, center_y = obstacle.x, obstacle.y
                 distance = sqrt((self.x - center_x) ** 2 + (self.y - center_y) ** 2)
+                agent_angle = atan2(self.y - center_y, self.x - center_x) % (2 * np.pi)
+                arc_start = obstacle.start_angle % (2 * np.pi)
+                arc_end = (obstacle.start_angle + obstacle.angle) % (2 * np.pi)
+
                 if abs(distance - obstacle.radius) <= self.size:
-                    return True
+                    if arc_start <= agent_angle <= arc_end or (arc_end < arc_start and (agent_angle <= arc_end or agent_angle >= arc_start)):
+                        return True
         return False
+
 
     def draw(self):
         self.shape.draw()
