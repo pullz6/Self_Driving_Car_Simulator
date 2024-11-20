@@ -90,8 +90,9 @@ class RLAgent:
         self.q_table[state][action] = old_value + self.alpha * (reward + self.gamma * future_reward - old_value)
 
     def move(self, action, obstacles):
-        original_x, original_y = self.x, self.y
+        original_x, original_y = self.x, self.y  # Save current position
 
+        # Apply movement based on action
         if action == 'left':
             self.x -= self.speed
         elif action == 'right':
@@ -101,13 +102,19 @@ class RLAgent:
         elif action == 'down':
             self.y -= self.speed
 
-        # Check for collisions
+        # Check for collision
         collision = self.check_collision(obstacles)
         if collision:
-            # Revert position if collision
+            print(f"Collision detected! Action: {action}, Pos: ({self.x}, {self.y})")
+            # Revert position
             self.x, self.y = original_x, original_y
 
-        # Update agent's position
+            # Try a random alternative action
+            alternative_action = random.choice(['left', 'right', 'up', 'down'])
+            print(f"Trying alternative action: {alternative_action}")
+            self.move(alternative_action, obstacles)
+
+        # Update the agent's shape
         self.shape.x = self.x
         self.shape.y = self.y
 
@@ -139,13 +146,23 @@ class RLAgent:
 
 # --- RL Step Function ---
 def step(agent, obstacles):
-    state = agent.get_state(obstacles)
-    action = agent.choose_action(state)
-    collision = agent.move(action, obstacles)
-    reward = -1 if collision else 1
+    state = agent.get_state(obstacles)  # Get current state
+    action = agent.choose_action(state)  # Choose action
+    collision = agent.move(action, obstacles)  # Perform action and check collision
+
+    # Calculate reward
+    reward = -10 if collision else 1
     next_state = agent.get_state(obstacles)
+
+    if state == next_state:  # Penalize stagnation
+        reward -= 2
+
+    # Update Q-table
     agent.update_q_table(state, action, reward, next_state)
-    agent.epsilon = max(0.1, agent.epsilon * 0.99)
+
+    # Decay exploration rate
+    agent.epsilon = max(0.1, agent.epsilon * 0.995)
+
 
 
 # Create an RL agent instance
